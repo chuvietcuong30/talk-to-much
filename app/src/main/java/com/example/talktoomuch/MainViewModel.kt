@@ -21,8 +21,8 @@ class MainViewModel : ViewModel() {
     private val _isRecordButtonEnabled = MutableLiveData(true)
     val isRecordButtonEnabled: LiveData<Boolean> = _isRecordButtonEnabled
 
-    private val _aiAnswerText = MutableLiveData<String?>(null)
-    val aiAnswerText: LiveData<String?> = _aiAnswerText
+    private val _grammarResult = MutableLiveData<GrammarResult?>(null)
+    val grammarResult: LiveData<GrammarResult?> = _grammarResult
 
     private var speechAvailable = false
     private var isListening = false
@@ -70,7 +70,7 @@ class MainViewModel : ViewModel() {
         _displayText.value = permissionDeniedText
     }
 
-    fun requestAiAnswer(
+    fun requestGrammarResult(
         apiKey: String,
         model: String,
         thinkingText: String,
@@ -80,19 +80,37 @@ class MainViewModel : ViewModel() {
     ) {
         val prompt = mergeTranscriptAndPartial().trim()
         if (prompt.isBlank()) {
-            _aiAnswerText.value = noTranscriptText
+            _grammarResult.value =
+                GrammarResult(
+                    isCorrect = false,
+                    correctedSentence = "",
+                    explanation = noTranscriptText,
+                    questionOfAI = "",
+                )
             return
         }
         if (apiKey.isBlank()) {
-            _aiAnswerText.value = missingKeyText
+            _grammarResult.value =
+                GrammarResult(
+                    isCorrect = false,
+                    correctedSentence = "",
+                    explanation = missingKeyText,
+                    questionOfAI = "",
+                )
             return
         }
 
-        _aiAnswerText.value = thinkingText
+        _grammarResult.value =
+            GrammarResult(
+                isCorrect = false,
+                correctedSentence = "",
+                explanation = thinkingText,
+                questionOfAI = "",
+            )
         viewModelScope.launch(Dispatchers.IO) {
             val result =
                 runCatching {
-                    callGeminiGenerateContent(
+                    callGeminiGenerateGrammarCheck(
                         apiKey = apiKey,
                         model = model,
                         userPrompt = prompt,
@@ -100,9 +118,16 @@ class MainViewModel : ViewModel() {
                 }
             result
                 .onSuccess { answer ->
-                    _aiAnswerText.postValue(answer)
+                    _grammarResult.postValue(answer)
                 }.onFailure { error ->
-                    _aiAnswerText.postValue("$errorPrefixText ${error.message ?: "unknown"}")
+                    _grammarResult.postValue(
+                        GrammarResult(
+                            isCorrect = false,
+                            correctedSentence = "",
+                            explanation = "$errorPrefixText ${error.message ?: "unknown"}",
+                            questionOfAI = "",
+                        ),
+                    )
                 }
         }
     }
@@ -160,11 +185,26 @@ class MainViewModel : ViewModel() {
             else -> "$sessionTranscript $currentPartial"
         }
 
-    private fun callGeminiGenerateContent(
+    private fun callGeminiGenerateGrammarCheck(
         apiKey: String,
         model: String,
         userPrompt: String,
-    ): String {
+    ): GrammarResult {
+        val grammarPrompt =
+            """
+            You are a grammar checker.
+            Analyze the user's sentence and return only valid JSON with these keys:
+            - isCorrect: boolean
+            - correctedSentence: string
+            - explanation: string
+            - questionOfAI: string
+
+            If the sentence is already correct, keep correctedSentence the same as the original sentence.
+            Use questionOfAI for a short follow-up question or leave it empty if none is needed.
+
+            User sentence: $userPrompt
+            """.trimIndent()
+
         val connection =
             (
                 URL("https://generativelanguage.googleapis.com/v1beta/models/$model:generateContent?key=$apiKey")
@@ -186,10 +226,14 @@ class MainViewModel : ViewModel() {
                             JSONObject().put(
                                 "parts",
                                 JSONArray().put(
-                                    JSONObject().put("text", userPrompt),
+                                    JSONObject().put("text", grammarPrompt),
                                 ),
                             ),
                         ),
+                    )
+                    put(
+                        "generationConfig",
+                        JSONObject().put("responseMimeType", "application/json"),
                     )
                 }.toString()
 
@@ -208,8 +252,38 @@ class MainViewModel : ViewModel() {
             throw IllegalStateException("HTTP $responseCode: $responseBody")
         }
 
-        return extractTextFromCandidates(JSONObject(responseBody).optJSONArray("candidates"))
+        val responseText =
+            extractTextFromCandidates(JSONObject(responseBody).optJSONArray("candidates"))
             ?: throw IllegalStateException("No text in AI response")
+        return parseGrammarResult(responseText)
+    }
+
+    private fun parseGrammarResult(responseText: String): GrammarResult {
+        val jsonText = extractJsonObjectText(responseText)
+        val json = JSONObject(jsonText)
+        val correctedSentence = json.optString("correctedSentence").trim()
+        val explanation = json.optString("explanation").trim()
+        val questionOfAI = json.optString("questionOfAI").trim()
+
+        if (correctedSentence.isBlank() || explanation.isBlank()) {
+            throw IllegalStateException("AI response is missing required fields")
+        }
+
+        return GrammarResult(
+            isCorrect = json.optBoolean("isCorrect"),
+            correctedSentence = correctedSentence,
+            explanation = explanation,
+            questionOfAI = questionOfAI,
+        )
+    }
+
+    private fun extractJsonObjectText(text: String): String {
+        val startIndex = text.indexOf('{')
+        val endIndex = text.lastIndexOf('}')
+        if (startIndex < 0 || endIndex <= startIndex) {
+            throw IllegalStateException("AI response is not valid JSON")
+        }
+        return text.substring(startIndex, endIndex + 1)
     }
 
     private fun readBody(stream: java.io.InputStream?): String {

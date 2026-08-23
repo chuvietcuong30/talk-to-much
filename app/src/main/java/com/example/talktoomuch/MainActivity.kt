@@ -135,7 +135,7 @@ class MainActivity : AppCompatActivity() {
         stopListening()
         updateRecordButtonText()
         viewModel.onRecordReleased(getString(R.string.press_and_hold_hint))
-        viewModel.requestAiAnswer(
+        viewModel.requestGrammarResult(
             apiKey = BuildConfig.GEMINI_API_KEY,
             model = "gemini-3.6-flash",
             thinkingText = getString(R.string.ai_thinking),
@@ -158,15 +158,40 @@ class MainActivity : AppCompatActivity() {
         viewModel.displayText.observe(this) { text ->
             binding.resultTextView.text = text
         }
-        viewModel.aiAnswerText.observe(this) { text ->
-            if (text != null) {
-                binding.aiAnswerTextView.text = text
+        viewModel.grammarResult.observe(this) { result ->
+            if (result != null) {
+                binding.grammarResultTextView.text = formatGrammarResult(result)
             }
         }
         viewModel.isRecordButtonEnabled.observe(this) { isEnabled ->
             binding.recordButton.isEnabled = isEnabled
         }
     }
+
+    private fun formatGrammarResult(result: GrammarResult): String =
+        if (result.correctedSentence.isBlank() && result.questionOfAI.isBlank()) {
+            result.explanation
+        } else {
+            buildString {
+                append(
+                    if (result.isCorrect) {
+                        getString(R.string.grammar_status_correct)
+                    } else {
+                        getString(R.string.grammar_status_incorrect)
+                    },
+                )
+                append('\n')
+                if (result.correctedSentence.isNotBlank()) {
+                    append(getString(R.string.grammar_corrected_sentence, result.correctedSentence))
+                    append('\n')
+                }
+                append(getString(R.string.grammar_explanation, result.explanation))
+                if (result.questionOfAI.isNotBlank()) {
+                    append('\n')
+                    append(getString(R.string.grammar_question, result.questionOfAI))
+                }
+            }
+        }
 
     private fun setupSpeechRecognizer() {
         speechRecognizer =

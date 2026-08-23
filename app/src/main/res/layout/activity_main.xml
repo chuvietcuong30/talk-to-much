@@ -22,14 +22,14 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/aiAnswerTextView"
+        android:id="@+id/grammarResultTextView"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="24dp"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="24dp"
         android:gravity="start"
-        android:text="@string/ai_answer_placeholder"
+        android:text="@string/grammar_result_placeholder"
         android:textSize="16sp"
         app:layout_constraintBottom_toTopOf="@id/recordButton"
         app:layout_constraintEnd_toEndOf="parent"

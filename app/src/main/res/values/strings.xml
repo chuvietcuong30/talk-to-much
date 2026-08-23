@@ -6,9 +6,14 @@
     <string name="stop_recording">Dừng ghi âm</string>
     <string name="permission_denied">Bạn cần cấp quyền micro để dùng tính năng này.</string>
     <string name="speech_not_supported">Thiết bị không hỗ trợ Speech Recognition.</string>
-    <string name="ai_answer_placeholder">Câu trả lời AI sẽ hiển thị ở đây.</string>
-    <string name="ai_thinking">AI đang trả lời…</string>
-    <string name="ai_no_transcript">Chưa có nội dung ghi âm để hỏi AI.</string>
+    <string name="grammar_result_placeholder">Kết quả kiểm tra ngữ pháp sẽ hiển thị ở đây.</string>
+    <string name="ai_thinking">AI đang phân tích ngữ pháp…</string>
+    <string name="ai_no_transcript">Chưa có câu nào để phân tích.</string>
     <string name="ai_missing_key">Thiếu API key. Thêm GEMINI_API_KEY vào local.properties.</string>
-    <string name="ai_error_prefix">AI lỗi:</string>
+    <string name="ai_error_prefix">Lỗi phân tích:</string>
+    <string name="grammar_status_correct">Câu này đúng.</string>
+    <string name="grammar_status_incorrect">Câu này cần sửa.</string>
+    <string name="grammar_corrected_sentence">Câu sửa: %1$s</string>
+    <string name="grammar_explanation">Giải thích: %1$s</string>
+    <string name="grammar_question">Câu hỏi của AI: %1$s</string>
 </resources>
