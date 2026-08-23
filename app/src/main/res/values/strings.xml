@@ -16,4 +16,5 @@
     <string name="grammar_corrected_sentence">Câu sửa: %1$s</string>
     <string name="grammar_explanation">Giải thích: %1$s</string>
     <string name="grammar_question">Câu hỏi của AI: %1$s</string>
+    <string name="slow_replay">Đọc chậm</string>
 </resources>

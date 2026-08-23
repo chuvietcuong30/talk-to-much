@@ -26,6 +26,7 @@ class MainActivity : AppCompatActivity() {
     private var speechRecognizer: SpeechRecognizer? = null
     private var textToSpeech: TextToSpeech? = null
     private var pendingSpeechText: String? = null
+    private var lastGrammarResult: GrammarResult? = null
     private var isRecording = false
     private val restartHandler = Handler(Looper.getMainLooper())
 
@@ -164,14 +165,25 @@ class MainActivity : AppCompatActivity() {
         }
         viewModel.grammarResult.observe(this) { result ->
             if (result != null) {
+                lastGrammarResult = result
                 val formattedResult = formatGrammarResult(result)
                 binding.grammarResultTextView.text = formattedResult
-                speakGrammarResult(result)
+                val shouldSpeak = result.correctedSentence.isNotBlank() || result.questionOfAI.isNotBlank()
+                binding.slowReplayButton.isEnabled = shouldSpeak
+                if (shouldSpeak) {
+                    speakGrammarResult(result, speechRate = 1.0f)
+                }
             }
         }
         viewModel.isRecordButtonEnabled.observe(this) { isEnabled ->
             binding.recordButton.isEnabled = isEnabled
         }
+        binding.slowReplayButton.setOnClickListener {
+            lastGrammarResult?.let { result ->
+                speakGrammarResult(result, speechRate = 0.5f)
+            }
+        }
+        binding.slowReplayButton.isEnabled = false
     }
 
     private fun formatGrammarResult(result: GrammarResult): String =
@@ -199,51 +211,55 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        private fun setupTextToSpeech() {
-            textToSpeech =
-                TextToSpeech(this) { status ->
-                    if (status == TextToSpeech.SUCCESS) {
-                        textToSpeech?.language = Locale.getDefault()
-                        pendingSpeechText?.let { text ->
-                            textToSpeech?.speak(text, TextToSpeech.QUEUE_FLUSH, null, "grammar_result")
-                            pendingSpeechText = null
-                        }
+    private fun setupTextToSpeech() {
+        textToSpeech =
+            TextToSpeech(this) { status ->
+                if (status == TextToSpeech.SUCCESS) {
+                    textToSpeech?.language = Locale.getDefault()
+                    pendingSpeechText?.let { text ->
+                        textToSpeech?.speak(text, TextToSpeech.QUEUE_FLUSH, null, "grammar_result")
+                        pendingSpeechText = null
                     }
                 }
+            }
+    }
+
+    private fun speakGrammarResult(
+        result: GrammarResult,
+        speechRate: Float,
+    ) {
+        val speechText = buildSpeechText(result)
+        if (speechText.isBlank()) {
+            return
+        }
+        val tts = textToSpeech
+        if (tts == null) {
+            pendingSpeechText = speechText
+            return
+        }
+        if (tts.isSpeaking) {
+            tts.stop()
+        }
+        tts.setSpeechRate(speechRate)
+        tts.speak(speechText, TextToSpeech.QUEUE_FLUSH, null, "grammar_result")
+    }
+
+    private fun buildSpeechText(result: GrammarResult): String =
+        buildString {
+            if (result.correctedSentence.isNotBlank()) {
+                append(result.correctedSentence)
+            }
+            if (result.questionOfAI.isNotBlank()) {
+                if (isNotBlank()) {
+                    append(". ")
+                }
+                append(result.questionOfAI)
+            }
         }
 
-        private fun speakGrammarResult(result: GrammarResult) {
-            val speechText = buildSpeechText(result)
-            if (speechText.isBlank()) {
-                return
-            }
-            val tts = textToSpeech
-            if (tts == null) {
-                pendingSpeechText = speechText
-                return
-            }
-            if (tts.isSpeaking) {
-                tts.stop()
-            }
-            tts.speak(speechText, TextToSpeech.QUEUE_FLUSH, null, "grammar_result")
-        }
-
-        private fun buildSpeechText(result: GrammarResult): String =
-            buildString {
-                if (result.correctedSentence.isNotBlank()) {
-                    append(result.correctedSentence)
-                }
-                if (result.questionOfAI.isNotBlank()) {
-                    if (isNotBlank()) {
-                        append(". ")
-                    }
-                    append(result.questionOfAI)
-                }
-            }
-
-        private fun setupSpeechRecognizer() {
-            speechRecognizer =
-                SpeechRecognizer.createSpeechRecognizer(this).apply {
+    private fun setupSpeechRecognizer() {
+        speechRecognizer =
+            SpeechRecognizer.createSpeechRecognizer(this).apply {
                 setRecognitionListener(
                     object : RecognitionListener {
                         override fun onReadyForSpeech(params: Bundle?) = Unit
