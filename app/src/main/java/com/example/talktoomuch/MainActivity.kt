@@ -9,6 +9,7 @@ import android.os.Looper
 import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
+import android.speech.tts.TextToSpeech
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -23,6 +24,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private val viewModel: MainViewModel by viewModels()
     private var speechRecognizer: SpeechRecognizer? = null
+    private var textToSpeech: TextToSpeech? = null
+    private var pendingSpeechText: String? = null
     private var isRecording = false
     private val restartHandler = Handler(Looper.getMainLooper())
 
@@ -62,6 +65,7 @@ class MainActivity : AppCompatActivity() {
         if (speechAvailable) {
             setupSpeechRecognizer()
         }
+        setupTextToSpeech()
 
         setupInteractions()
         observeViewModel()
@@ -160,7 +164,9 @@ class MainActivity : AppCompatActivity() {
         }
         viewModel.grammarResult.observe(this) { result ->
             if (result != null) {
-                binding.grammarResultTextView.text = formatGrammarResult(result)
+                val formattedResult = formatGrammarResult(result)
+                binding.grammarResultTextView.text = formattedResult
+                speakGrammarResult(result)
             }
         }
         viewModel.isRecordButtonEnabled.observe(this) { isEnabled ->
@@ -193,9 +199,51 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-    private fun setupSpeechRecognizer() {
-        speechRecognizer =
-            SpeechRecognizer.createSpeechRecognizer(this).apply {
+        private fun setupTextToSpeech() {
+            textToSpeech =
+                TextToSpeech(this) { status ->
+                    if (status == TextToSpeech.SUCCESS) {
+                        textToSpeech?.language = Locale.getDefault()
+                        pendingSpeechText?.let { text ->
+                            textToSpeech?.speak(text, TextToSpeech.QUEUE_FLUSH, null, "grammar_result")
+                            pendingSpeechText = null
+                        }
+                    }
+                }
+        }
+
+        private fun speakGrammarResult(result: GrammarResult) {
+            val speechText = buildSpeechText(result)
+            if (speechText.isBlank()) {
+                return
+            }
+            val tts = textToSpeech
+            if (tts == null) {
+                pendingSpeechText = speechText
+                return
+            }
+            if (tts.isSpeaking) {
+                tts.stop()
+            }
+            tts.speak(speechText, TextToSpeech.QUEUE_FLUSH, null, "grammar_result")
+        }
+
+        private fun buildSpeechText(result: GrammarResult): String =
+            buildString {
+                if (result.correctedSentence.isNotBlank()) {
+                    append(result.correctedSentence)
+                }
+                if (result.questionOfAI.isNotBlank()) {
+                    if (isNotBlank()) {
+                        append(". ")
+                    }
+                    append(result.questionOfAI)
+                }
+            }
+
+        private fun setupSpeechRecognizer() {
+            speechRecognizer =
+                SpeechRecognizer.createSpeechRecognizer(this).apply {
                 setRecognitionListener(
                     object : RecognitionListener {
                         override fun onReadyForSpeech(params: Bundle?) = Unit
@@ -258,6 +306,8 @@ class MainActivity : AppCompatActivity() {
         restartHandler.removeCallbacks(restartListeningRunnable)
         speechRecognizer?.destroy()
         speechRecognizer = null
+        textToSpeech?.shutdown()
+        textToSpeech = null
         super.onDestroy()
     }
 }
