@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">talktoomuch</string>
+    <string name="hold_to_speak">Bắt đầu ghi âm</string>
+    <string name="press_and_hold_hint">Nhấn nút để bắt đầu ghi âm</string>
+    <string name="listening">Đang nghe…</string>
+    <string name="stop_recording">Dừng ghi âm</string>
+    <string name="permission_denied">Bạn cần cấp quyền micro để dùng tính năng này.</string>
+    <string name="speech_not_supported">Thiết bị không hỗ trợ Speech Recognition.</string>
+    <string name="ai_answer_placeholder">Câu trả lời AI sẽ hiển thị ở đây.</string>
+    <string name="ai_thinking">AI đang trả lời…</string>
+    <string name="ai_no_transcript">Chưa có nội dung ghi âm để hỏi AI.</string>
+    <string name="ai_missing_key">Thiếu API key. Thêm GEMINI_API_KEY vào local.properties.</string>
+    <string name="ai_error_prefix">AI lỗi:</string>
+</resources>
