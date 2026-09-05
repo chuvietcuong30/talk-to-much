@@ -1,19 +1,23 @@
-package com.example.talktoomuch
+package com.example.talktoomuch.viewmodel
 
 import android.os.Looper
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.talktoomuch.repository.model.ChatMessage
+import com.example.talktoomuch.repository.model.GrammarResult
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.json.JSONArray
 import org.json.JSONObject
 import java.io.BufferedReader
+import java.io.InputStream
 import java.io.InputStreamReader
 import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
 import java.net.URL
+import kotlin.collections.plus
 
 class MainViewModel : ViewModel() {
     private val _chatMessages = MutableLiveData<List<ChatMessage>>(emptyList())
@@ -231,9 +235,7 @@ class MainViewModel : ViewModel() {
         _draftInputText.value = mergeTranscriptAndPartial()
     }
 
-    fun onFinalResult(
-        text: String?,
-    ) {
+    fun onFinalResult(text: String?) {
         val resultText = text?.trim().orEmpty()
         if (resultText.isNotBlank()) {
             appendToSessionTranscript(resultText)
@@ -270,7 +272,13 @@ class MainViewModel : ViewModel() {
     ): Long {
         val messageId = nextMessageId++
         val currentMessages = _chatMessages.value.orEmpty()
-        val updatedMessages = currentMessages + ChatMessage(id = messageId, text = text, fromUser = fromUser)
+        val updatedMessages =
+            currentMessages +
+                ChatMessage(
+                    id = messageId,
+                    text = text,
+                    fromUser = fromUser,
+                )
         setOrPostChatMessages(updatedMessages)
         return messageId
     }
@@ -401,7 +409,7 @@ class MainViewModel : ViewModel() {
 
         val responseText =
             extractTextFromCandidates(JSONObject(responseBody).optJSONArray("candidates"))
-            ?: throw IllegalStateException("No text in AI response")
+                ?: throw IllegalStateException("No text in AI response")
         return parseGrammarResult(responseText)
     }
 
@@ -433,7 +441,7 @@ class MainViewModel : ViewModel() {
         return text.substring(startIndex, endIndex + 1)
     }
 
-    private fun readBody(stream: java.io.InputStream?): String {
+    private fun readBody(stream: InputStream?): String {
         if (stream == null) {
             return ""
         }

@@ -1,4 +1,4 @@
-package com.example.talktoomuch
+package com.example.talktoomuch.ui
 
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -8,7 +8,9 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.example.talktoomuch.R
 import com.example.talktoomuch.databinding.ItemChatMessageBinding
+import com.example.talktoomuch.repository.model.ChatMessage
 
 class ChatMessageAdapter : ListAdapter<ChatMessage, ChatMessageAdapter.ChatMessageViewHolder>(DIFF_CALLBACK) {
     override fun onCreateViewHolder(

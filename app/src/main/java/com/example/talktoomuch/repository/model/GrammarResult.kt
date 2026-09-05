@@ -1,4 +1,4 @@
-package com.example.talktoomuch
+package com.example.talktoomuch.repository.model
 
 data class GrammarResult(
     val isCorrect: Boolean,

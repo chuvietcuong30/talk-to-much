@@ -1,4 +1,4 @@
-package com.example.talktoomuch
+package com.example.talktoomuch.ui
 
 import android.Manifest
 import android.content.Intent
@@ -19,7 +19,11 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.doOnNextLayout
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.talktoomuch.BuildConfig
+import com.example.talktoomuch.R
 import com.example.talktoomuch.databinding.ActivityMainBinding
+import com.example.talktoomuch.repository.model.GrammarResult
+import com.example.talktoomuch.viewmodel.MainViewModel
 import java.util.Locale
 
 class MainActivity : AppCompatActivity() {
