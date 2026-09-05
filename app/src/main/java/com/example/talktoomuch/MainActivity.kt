@@ -17,6 +17,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.doOnNextLayout
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.talktoomuch.databinding.ActivityMainBinding
 import java.util.Locale
 
@@ -29,6 +31,7 @@ class MainActivity : AppCompatActivity() {
     private var lastGrammarResult: GrammarResult? = null
     private var isRecording = false
     private val restartHandler = Handler(Looper.getMainLooper())
+    private lateinit var chatMessageAdapter: ChatMessageAdapter
 
     private val restartListeningRunnable =
         Runnable {
@@ -46,6 +49,7 @@ class MainActivity : AppCompatActivity() {
             } else {
                 isRecording = false
                 updateRecordButtonText()
+                updateSendButtonState()
                 viewModel.onPermissionDenied(getString(R.string.permission_denied))
             }
         }
@@ -67,16 +71,17 @@ class MainActivity : AppCompatActivity() {
             setupSpeechRecognizer()
         }
         setupTextToSpeech()
+        setupChatList()
 
         setupInteractions()
         observeViewModel()
 
         viewModel.initialize(
             speechAvailable = speechAvailable,
-            hintText = getString(R.string.press_and_hold_hint),
             speechNotSupportedText = getString(R.string.speech_not_supported),
         )
         updateRecordButtonText()
+        updateSendButtonState()
     }
 
     private fun startListening(showListeningText: Boolean) {
@@ -92,7 +97,7 @@ class MainActivity : AppCompatActivity() {
         restartHandler.removeCallbacks(restartListeningRunnable)
         speechRecognizer?.startListening(recognizerIntent)
         if (showListeningText) {
-            viewModel.onListeningStarted(getString(R.string.listening))
+            viewModel.onListeningStarted()
         }
     }
 
@@ -123,11 +128,15 @@ class MainActivity : AppCompatActivity() {
                 startRecordingSession()
             }
         }
+        binding.sendButton.setOnClickListener {
+            sendTypedMessage()
+        }
     }
 
     private fun startRecordingSession() {
         isRecording = true
         updateRecordButtonText()
+        updateSendButtonState()
         if (hasAudioPermission()) {
             startListening(showListeningText = true)
         } else {
@@ -139,15 +148,8 @@ class MainActivity : AppCompatActivity() {
         isRecording = false
         stopListening()
         updateRecordButtonText()
-        viewModel.onRecordReleased(getString(R.string.press_and_hold_hint))
-        viewModel.requestGrammarResult(
-            apiKey = BuildConfig.GEMINI_API_KEY,
-            model = "gemini-3.6-flash",
-            thinkingText = getString(R.string.ai_thinking),
-            noTranscriptText = getString(R.string.ai_no_transcript),
-            missingKeyText = getString(R.string.ai_missing_key),
-            errorPrefixText = getString(R.string.ai_error_prefix),
-        )
+        updateSendButtonState()
+        viewModel.onRecordReleased()
     }
 
     private fun updateRecordButtonText() {
@@ -160,14 +162,20 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun observeViewModel() {
-        viewModel.displayText.observe(this) { text ->
-            binding.resultTextView.text = text
+        viewModel.chatMessages.observe(this) { messages ->
+            chatMessageAdapter.submitList(messages) {
+                scrollChatToBottom()
+            }
+        }
+        viewModel.draftInputText.observe(this) { text ->
+            if (binding.messageInputEditText.text.toString() != text) {
+                binding.messageInputEditText.setText(text)
+                binding.messageInputEditText.setSelection(text.length)
+            }
         }
         viewModel.grammarResult.observe(this) { result ->
             if (result != null) {
                 lastGrammarResult = result
-                val formattedResult = formatGrammarResult(result)
-                binding.grammarResultTextView.text = formattedResult
                 val shouldSpeak = result.correctedSentence.isNotBlank() || result.questionOfAI.isNotBlank()
                 binding.slowReplayButton.isEnabled = shouldSpeak
                 if (shouldSpeak) {
@@ -185,31 +193,6 @@ class MainActivity : AppCompatActivity() {
         }
         binding.slowReplayButton.isEnabled = false
     }
-
-    private fun formatGrammarResult(result: GrammarResult): String =
-        if (result.correctedSentence.isBlank() && result.questionOfAI.isBlank()) {
-            result.explanation
-        } else {
-            buildString {
-                append(
-                    if (result.isCorrect) {
-                        getString(R.string.grammar_status_correct)
-                    } else {
-                        getString(R.string.grammar_status_incorrect)
-                    },
-                )
-                append('\n')
-                if (result.correctedSentence.isNotBlank()) {
-                    append(getString(R.string.grammar_corrected_sentence, result.correctedSentence))
-                    append('\n')
-                }
-                append(getString(R.string.grammar_explanation, result.explanation))
-                if (result.questionOfAI.isNotBlank()) {
-                    append('\n')
-                    append(getString(R.string.grammar_question, result.questionOfAI))
-                }
-            }
-        }
 
     private fun setupTextToSpeech() {
         textToSpeech =
@@ -282,7 +265,7 @@ class MainActivity : AppCompatActivity() {
                                 scheduleRestartListening()
                                 return
                             }
-                            viewModel.onRecognitionError(getString(R.string.press_and_hold_hint))
+                            viewModel.onRecognitionError()
                         }
 
                         override fun onResults(results: Bundle?) {
@@ -292,7 +275,6 @@ class MainActivity : AppCompatActivity() {
                                     ?.firstOrNull()
                             viewModel.onFinalResult(
                                 text = spokenText,
-                                hintText = getString(R.string.press_and_hold_hint),
                             )
                             if (isRecording) {
                                 scheduleRestartListening()
@@ -317,6 +299,51 @@ class MainActivity : AppCompatActivity() {
         error == SpeechRecognizer.ERROR_NO_MATCH ||
             error == SpeechRecognizer.ERROR_SPEECH_TIMEOUT ||
             error == SpeechRecognizer.ERROR_RECOGNIZER_BUSY
+
+    private fun setupChatList() {
+        chatMessageAdapter = ChatMessageAdapter()
+        binding.chatRecyclerView.layoutManager =
+            LinearLayoutManager(this).apply {
+                stackFromEnd = true
+            }
+        binding.chatRecyclerView.adapter = chatMessageAdapter
+    }
+
+    private fun scrollChatToBottom() {
+        val lastPosition = chatMessageAdapter.itemCount - 1
+        if (lastPosition < 0) {
+            return
+        }
+        binding.chatRecyclerView.post {
+            binding.chatRecyclerView.scrollToPosition(lastPosition)
+            binding.chatRecyclerView.doOnNextLayout {
+                binding.chatRecyclerView.scrollToPosition(lastPosition)
+            }
+        }
+    }
+
+    private fun updateSendButtonState() {
+        val isEnabled = !isRecording
+        binding.sendButton.isEnabled = isEnabled
+        binding.sendButton.alpha = if (isEnabled) 1.0f else 0.45f
+    }
+
+    private fun sendTypedMessage() {
+        viewModel.sendTypedPrompt(
+            rawText = binding.messageInputEditText.text.toString(),
+            apiKey = BuildConfig.GEMINI_API_KEY,
+            model = "gemini-3.6-flash",
+            thinkingText = getString(R.string.ai_thinking),
+            noTranscriptText = getString(R.string.ai_no_transcript),
+            missingKeyText = getString(R.string.ai_missing_key),
+            errorPrefixText = getString(R.string.ai_error_prefix),
+            statusCorrectText = getString(R.string.grammar_status_correct),
+            statusIncorrectText = getString(R.string.grammar_status_incorrect),
+            correctedLabel = getString(R.string.grammar_corrected_label),
+            explanationLabel = getString(R.string.grammar_explanation_label),
+            questionLabel = getString(R.string.grammar_question_label),
+        )
+    }
 
     override fun onDestroy() {
         restartHandler.removeCallbacks(restartListeningRunnable)

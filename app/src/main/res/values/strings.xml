@@ -13,8 +13,14 @@
     <string name="ai_error_prefix">Lỗi phân tích:</string>
     <string name="grammar_status_correct">Câu này đúng.</string>
     <string name="grammar_status_incorrect">Câu này cần sửa.</string>
+    <string name="grammar_corrected_label">Câu sửa</string>
+    <string name="grammar_explanation_label">Giải thích</string>
+    <string name="grammar_question_label">Câu hỏi của AI</string>
     <string name="grammar_corrected_sentence">Câu sửa: %1$s</string>
     <string name="grammar_explanation">Giải thích: %1$s</string>
     <string name="grammar_question">Câu hỏi của AI: %1$s</string>
     <string name="slow_replay">Đọc chậm</string>
+    <string name="chat_title">Chatbot AI</string>
+    <string name="message_input_hint">Nhập câu nói hoặc bấm ghi âm...</string>
+    <string name="send_text">Gửi</string>
 </resources>
