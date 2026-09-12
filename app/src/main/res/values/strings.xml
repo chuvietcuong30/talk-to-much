@@ -23,4 +23,12 @@
     <string name="chat_title">Chatbot AI</string>
     <string name="message_input_hint">Nhập câu nói hoặc bấm ghi âm...</string>
     <string name="send_text">Gửi</string>
+    <string name="nav_open_menu">Mở menu</string>
+    <string name="menu_close">Đóng</string>
+    <string name="menu_history">History</string>
+    <string name="menu_profile">Profile</string>
+    <string name="menu_home">Home</string>
+    <string name="menu_more">More</string>
+    <string name="menu_footer">talktoomuch · v1.0</string>
+    <string name="menu_coming_soon">Mục này sẽ được cập nhật trong bản tiếp theo.</string>
 </resources>

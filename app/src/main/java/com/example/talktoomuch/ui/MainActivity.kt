@@ -10,6 +10,8 @@ import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
 import android.speech.tts.TextToSpeech
+import android.view.View
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -22,6 +24,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.talktoomuch.BuildConfig
 import com.example.talktoomuch.R
 import com.example.talktoomuch.databinding.ActivityMainBinding
+import com.example.talktoomuch.databinding.LayoutSlideMenuBinding
 import com.example.talktoomuch.repository.model.GrammarResult
 import com.example.talktoomuch.viewmodel.MainViewModel
 import java.util.Locale
@@ -36,6 +39,7 @@ class MainActivity : AppCompatActivity() {
     private var isRecording = false
     private val restartHandler = Handler(Looper.getMainLooper())
     private lateinit var chatMessageAdapter: ChatMessageAdapter
+    private lateinit var slideMenuAdapter: SlideMenuAdapter
 
     private val restartListeningRunnable =
         Runnable {
@@ -76,7 +80,7 @@ class MainActivity : AppCompatActivity() {
         }
         setupTextToSpeech()
         setupChatList()
-
+        setupSlideMenu()
         setupInteractions()
         observeViewModel()
 
@@ -122,6 +126,11 @@ class MainActivity : AppCompatActivity() {
         ) == PackageManager.PERMISSION_GRANTED
 
     private fun setupInteractions() {
+        // Open slide menu via back arrow
+        binding.navArrowButton.setOnClickListener {
+            toggleSlideMenu(show = !isSlideMenuVisible())
+        }
+
         binding.recordButton.setOnClickListener {
             if (!viewModel.canStartRecording()) {
                 return@setOnClickListener
@@ -134,6 +143,81 @@ class MainActivity : AppCompatActivity() {
         }
         binding.sendButton.setOnClickListener {
             sendTypedMessage()
+        }
+
+        // Scrim closes the menu
+        binding.menuScrim.setOnClickListener {
+            toggleSlideMenu(show = false)
+        }
+    }
+
+    // ============ SLIDE MENU ============
+
+    private fun setupSlideMenu() {
+        val menuBinding = LayoutSlideMenuBinding.inflate(layoutInflater, binding.slideMenuContainer, false)
+        binding.slideMenuContainer.addView(menuBinding.root)
+
+        slideMenuAdapter =
+            SlideMenuAdapter { item ->
+                onMenuItemSelected(item.id)
+            }
+
+        menuBinding.menuRecyclerView.layoutManager = LinearLayoutManager(this)
+        menuBinding.menuRecyclerView.adapter = slideMenuAdapter
+        slideMenuAdapter.submitList(buildMenuItems())
+
+        // Close button at top of the panel
+        menuBinding.menuCloseRow.setOnClickListener {
+            toggleSlideMenu(show = false)
+        }
+    }
+
+    private fun buildMenuItems(): List<SlideMenuItem> =
+        listOf(
+            SlideMenuItem(
+                id = "home",
+                iconRes = R.drawable.ic_home,
+                labelRes = R.string.menu_home,
+                isActive = true,
+            ),
+            SlideMenuItem(
+                id = "history",
+                iconRes = R.drawable.ic_history,
+                labelRes = R.string.menu_history,
+            ),
+            SlideMenuItem(
+                id = "profile",
+                iconRes = R.drawable.ic_profile,
+                labelRes = R.string.menu_profile,
+            ),
+            SlideMenuItem(
+                id = "more",
+                iconRes = R.drawable.ic_more,
+                labelRes = R.string.menu_more,
+            ),
+        )
+
+    private fun onMenuItemSelected(itemId: String) {
+        when (itemId) {
+            "history", "profile", "more" ->
+                Toast.makeText(this, R.string.menu_coming_soon, Toast.LENGTH_SHORT).show()
+            "home" -> {
+                // Already on the home screen — just close the drawer
+            }
+        }
+        toggleSlideMenu(show = false)
+    }
+
+    private fun isSlideMenuVisible(): Boolean =
+        binding.slideMenuContainer.visibility == View.VISIBLE
+
+    private fun toggleSlideMenu(show: Boolean) {
+        if (show) {
+            binding.menuScrim.visibility = View.VISIBLE
+            binding.slideMenuContainer.visibility = View.VISIBLE
+        } else {
+            binding.menuScrim.visibility = View.GONE
+            binding.slideMenuContainer.visibility = View.GONE
         }
     }
 
@@ -250,15 +334,10 @@ class MainActivity : AppCompatActivity() {
                 setRecognitionListener(
                     object : RecognitionListener {
                         override fun onReadyForSpeech(params: Bundle?) = Unit
-
                         override fun onBeginningOfSpeech() = Unit
-
                         override fun onRmsChanged(rmsdB: Float) = Unit
-
                         override fun onBufferReceived(buffer: ByteArray?) = Unit
-
                         override fun onEndOfSpeech() = Unit
-
                         override fun onEvent(
                             eventType: Int,
                             params: Bundle?,
@@ -277,9 +356,7 @@ class MainActivity : AppCompatActivity() {
                                 results
                                     ?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
                                     ?.firstOrNull()
-                            viewModel.onFinalResult(
-                                text = spokenText,
-                            )
+                            viewModel.onFinalResult(text = spokenText)
                             if (isRecording) {
                                 scheduleRestartListening()
                             }

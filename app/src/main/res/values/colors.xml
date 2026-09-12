@@ -2,4 +2,7 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="menu_inactive_tint">#F8F9FA</color>
+    <color name="menu_active_tint">#4FC3F7</color>
+    <color name="menu_chevron_tint">#5A6772</color>
 </resources>

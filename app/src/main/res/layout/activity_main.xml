@@ -5,23 +5,44 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F4F4F4"
+    android:background="#010E13"
     tools:context=".ui.MainActivity">
 
-    <TextView
-        android:id="@+id/chatTitleTextView"
-        android:layout_width="0dp"
+    <!-- ===== TOP BAR ===== -->
+    <LinearLayout
+        android:id="@+id/topBarContainer"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:gravity="center"
-        android:paddingTop="16dp"
-        android:paddingBottom="16dp"
-        android:text="@string/chat_title"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent">
 
+        <!-- Navigation arrow (opens slide menu) -->
+        <ImageButton
+            android:id="@+id/navArrowButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="8dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/nav_open_menu"
+            android:padding="10dp"
+            android:src="@drawable/ic_arrow_back"
+            app:tint="#F8F9FA" />
+
+        <TextView
+            android:id="@+id/chatTitleTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingTop="16dp"
+            android:paddingBottom="16dp"
+            android:text="@string/chat_title"
+            android:textColor="#F8F9FA"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- ===== CHAT LIST ===== -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/chatRecyclerView"
         android:layout_width="0dp"
@@ -32,9 +53,10 @@
         app:layout_constraintBottom_toTopOf="@id/slowReplayButton"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/chatTitleTextView"
+        app:layout_constraintTop_toBottomOf="@id/topBarContainer"
         tools:listitem="@layout/item_chat_message" />
 
+    <!-- ===== SLOW REPLAY ===== -->
     <Button
         android:id="@+id/slowReplayButton"
         android:layout_width="wrap_content"
@@ -45,6 +67,7 @@
         app:layout_constraintBottom_toTopOf="@id/inputContainer"
         app:layout_constraintEnd_toEndOf="parent" />
 
+    <!-- ===== INPUT BAR ===== -->
     <LinearLayout
         android:id="@+id/inputContainer"
         android:layout_width="0dp"
@@ -88,5 +111,31 @@
             android:layout_marginStart="6dp"
             android:text="@string/send_text" />
     </LinearLayout>
+
+    <!-- ===== SCRIM (tappable to close menu) ===== -->
+    <View
+        android:id="@+id/menuScrim"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@drawable/bg_scrim"
+        android:clickable="true"
+        android:focusable="true"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- ===== SLIDE MENU CONTAINER (½ screen width, full height) ===== -->
+    <FrameLayout
+        android:id="@+id/slideMenuContainer"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintWidth_percent="0.5"
+        tools:visibility="visible" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
