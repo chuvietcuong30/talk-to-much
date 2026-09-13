@@ -12,7 +12,7 @@ import com.example.talktoomuch.databinding.ItemMenuDrawerBinding
 /**
  * Adapter for the slide-in drawer.
  * Renders a fixed list of menu items with an icon, label, optional chevron,
- * and a subtle highlight for the currently-selected entry.
+ * and a subtle highlight (brand_primary_container) for the active entry.
  */
 class SlideMenuAdapter(
     private val onItemClick: (SlideMenuItem) -> Unit,
@@ -48,13 +48,18 @@ class SlideMenuAdapter(
             binding.menuItemIcon.setImageResource(item.iconRes)
             binding.menuItemLabel.text = context.getString(item.labelRes)
 
-            val tintColor = if (item.isActive) {
-                ContextCompat.getColor(context, R.color.menu_active_tint)
+            val labelColor = if (item.isActive) {
+                ContextCompat.getColor(context, R.color.brand_primary)
             } else {
-                ContextCompat.getColor(context, R.color.menu_inactive_tint)
+                ContextCompat.getColor(context, R.color.text_primary)
             }
-            binding.menuItemIcon.setColorFilter(tintColor)
-            binding.menuItemLabel.setTextColor(tintColor)
+            val iconColor = if (item.isActive) {
+                ContextCompat.getColor(context, R.color.brand_primary)
+            } else {
+                ContextCompat.getColor(context, R.color.text_secondary)
+            }
+            binding.menuItemIcon.setColorFilter(iconColor)
+            binding.menuItemLabel.setTextColor(labelColor)
             binding.menuItemChevron.visibility = if (item.isActive) {
                 android.view.View.INVISIBLE
             } else {

@@ -5,114 +5,356 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#010E13"
+    android:background="@color/surface_dim"
     tools:context=".ui.MainActivity">
 
-    <!-- ===== TOP BAR ===== -->
-    <LinearLayout
-        android:id="@+id/topBarContainer"
-        android:layout_width="wrap_content"
+    <!-- =============== TOP APP BAR =============== -->
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/topBar"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
+        android:background="@color/surface"
+        android:minHeight="?attr/actionBarSize"
+        android:contentInsetStart="0dp"
+        android:contentInsetEnd="0dp"
+        app:contentInsetStart="0dp"
+        app:contentInsetEnd="0dp"
+        app:elevation="0dp"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <!-- Navigation arrow (opens slide menu) -->
-        <ImageButton
-            android:id="@+id/navArrowButton"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_marginStart="8dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="@string/nav_open_menu"
-            android:padding="10dp"
-            android:src="@drawable/ic_arrow_back"
-            app:tint="#F8F9FA" />
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp">
 
-        <TextView
-            android:id="@+id/chatTitleTextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:paddingTop="16dp"
-            android:paddingBottom="16dp"
-            android:text="@string/chat_title"
-            android:textColor="#F8F9FA"
-            android:textSize="20sp"
-            android:textStyle="bold" />
-    </LinearLayout>
+            <!-- Menu icon -->
+            <ImageButton
+                android:id="@+id/navArrowButton"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:background="@drawable/ripple_icon_button"
+                android:contentDescription="@string/cd_menu"
+                android:padding="10dp"
+                android:src="@drawable/ic_menu"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:tint="@color/text_primary" />
 
-    <!-- ===== CHAT LIST ===== -->
+            <!-- Brand: avatar + title + status -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/brandGroup"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/settingsButton"
+                app:layout_constraintStart_toEndOf="@id/navArrowButton"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <!-- AI avatar -->
+                <FrameLayout
+                    android:id="@+id/aiAvatarFrame"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="@drawable/bg_avatar_ai"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
+
+                    <ImageView
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:layout_gravity="center"
+                        android:contentDescription="@null"
+                        android:src="@drawable/ic_ai_sparkle" />
+                </FrameLayout>
+
+                <!-- Online dot -->
+                <View
+                    android:id="@+id/onlineDot"
+                    android:layout_width="12dp"
+                    android:layout_height="12dp"
+                    android:background="@drawable/bg_online_dot"
+                    app:layout_constraintBottom_toBottomOf="@id/aiAvatarFrame"
+                    app:layout_constraintEnd_toEndOf="@id/aiAvatarFrame" />
+
+                <TextView
+                    android:id="@+id/brandTitle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:ellipsize="end"
+                    android:fontFamily="sans-serif-medium"
+                    android:maxLines="1"
+                    android:text="@string/app_name"
+                    android:textColor="@color/text_primary"
+                    android:textSize="17sp"
+                    app:layout_constraintBottom_toTopOf="@id/brandSubtitle"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/aiAvatarFrame"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintVertical_chainStyle="packed" />
+
+                <LinearLayout
+                    android:id="@+id/brandSubtitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:layout_marginTop="2dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/aiAvatarFrame"
+                    app:layout_constraintTop_toBottomOf="@id/brandTitle">
+
+                    <View
+                        android:layout_width="6dp"
+                        android:layout_height="6dp"
+                        android:background="@drawable/bg_dot_green" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="6dp"
+                        android:fontFamily="sans-serif"
+                        android:text="@string/header_status_online"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="12sp" />
+                </LinearLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <!-- Settings icon -->
+            <ImageButton
+                android:id="@+id/settingsButton"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:background="@drawable/ripple_icon_button"
+                android:contentDescription="@string/cd_settings"
+                android:padding="10dp"
+                android:src="@drawable/ic_settings"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:tint="@color/text_primary" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </com.google.android.material.appbar.MaterialToolbar>
+
+    <!-- Soft shadow under the top bar -->
+    <View
+        android:id="@+id/topBarDivider"
+        android:layout_width="0dp"
+        android:layout_height="2dp"
+        android:background="@drawable/bg_top_bar_shadow"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/topBar" />
+
+    <!-- =============== CHAT LIST =============== -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/chatRecyclerView"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:clipToPadding="false"
-        android:paddingTop="8dp"
+        android:overScrollMode="never"
+        android:paddingTop="12dp"
         android:paddingBottom="8dp"
-        app:layout_constraintBottom_toTopOf="@id/slowReplayButton"
+        app:layout_constraintBottom_toTopOf="@id/suggestionsScroll"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/topBarContainer"
+        app:layout_constraintTop_toBottomOf="@id/topBarDivider"
         tools:listitem="@layout/item_chat_message" />
 
-    <!-- ===== SLOW REPLAY ===== -->
-    <Button
-        android:id="@+id/slowReplayButton"
-        android:layout_width="wrap_content"
+    <!-- =============== SUGGESTION CHIPS (above input) =============== -->
+    <HorizontalScrollView
+        android:id="@+id/suggestionsScroll"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="12dp"
-        android:layout_marginBottom="8dp"
-        android:text="@string/slow_replay"
-        app:layout_constraintBottom_toTopOf="@id/inputContainer"
-        app:layout_constraintEnd_toEndOf="parent" />
+        android:overScrollMode="never"
+        android:scrollbars="none"
+        app:layout_constraintBottom_toTopOf="@id/inputCard"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
 
-    <!-- ===== INPUT BAR ===== -->
-    <LinearLayout
-        android:id="@+id/inputContainer"
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/suggestionChipGroup"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingStart="16dp"
+            android:paddingTop="4dp"
+            android:paddingEnd="16dp"
+            android:paddingBottom="8dp"
+            app:chipSpacingHorizontal="8dp"
+            app:singleLine="true"
+            app:singleSelection="false">
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipTravel"
+                style="@style/Widget.Material3.Chip.Assist"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/suggestion_topic_travel"
+                android:textColor="@color/text_primary"
+                app:chipBackgroundColor="@color/surface"
+                app:chipCornerRadius="18dp"
+                app:chipStrokeColor="@color/surface_outline"
+                app:chipStrokeWidth="1dp" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipWork"
+                style="@style/Widget.Material3.Chip.Assist"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/suggestion_topic_work"
+                android:textColor="@color/text_primary"
+                app:chipBackgroundColor="@color/surface"
+                app:chipCornerRadius="18dp"
+                app:chipStrokeColor="@color/surface_outline"
+                app:chipStrokeWidth="1dp" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipFood"
+                style="@style/Widget.Material3.Chip.Assist"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/suggestion_topic_food"
+                android:textColor="@color/text_primary"
+                app:chipBackgroundColor="@color/surface"
+                app:chipCornerRadius="18dp"
+                app:chipStrokeColor="@color/surface_outline"
+                app:chipStrokeWidth="1dp" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipHobby"
+                style="@style/Widget.Material3.Chip.Assist"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/suggestion_topic_hobby"
+                android:textColor="@color/text_primary"
+                app:chipBackgroundColor="@color/surface"
+                app:chipCornerRadius="18dp"
+                app:chipStrokeColor="@color/surface_outline"
+                app:chipStrokeWidth="1dp" />
+        </com.google.android.material.chip.ChipGroup>
+    </HorizontalScrollView>
+
+    <!-- =============== INPUT BAR (floating card) =============== -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/inputCard"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="12dp"
         android:layout_marginEnd="12dp"
-        android:layout_marginBottom="12dp"
-        android:background="@drawable/bg_chat_ai"
-        android:elevation="2dp"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:padding="8dp"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/bg_input_bar"
+        android:elevation="6dp"
+        android:minHeight="64dp"
+        android:paddingStart="6dp"
+        android:paddingTop="4dp"
+        android:paddingEnd="4dp"
+        android:paddingBottom="4dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
+        <!-- Attach icon -->
+        <ImageButton
+            android:id="@+id/attachButton"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="@drawable/ripple_icon_button"
+            android:contentDescription="@string/cd_attach"
+            android:padding="8dp"
+            android:src="@drawable/ic_attach"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- Text input -->
         <EditText
             android:id="@+id/messageInputEditText"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
             android:background="@android:color/transparent"
-            android:hint="@string/message_input_hint"
+            android:hint="@string/input_hint_hint"
             android:imeOptions="actionDone"
             android:inputType="textMultiLine|textCapSentences"
             android:maxLines="3"
-            android:minHeight="40dp"
-            android:paddingStart="8dp"
-            android:paddingEnd="8dp" />
+            android:minHeight="52dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:textColor="@color/text_primary"
+            android:textColorHint="@color/text_tertiary"
+            android:textSize="15sp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/micButton"
+            app:layout_constraintStart_toEndOf="@id/attachButton"
+            app:layout_constraintTop_toTopOf="parent" />
 
+        <!-- Big green microphone button (always visible when input is empty; shown alongside send when input has text but disabled during recording) -->
+        <ImageButton
+            android:id="@+id/micButton"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:layout_marginStart="6dp"
+            android:background="@drawable/bg_mic_button"
+            android:contentDescription="@string/cd_mic"
+            android:elevation="3dp"
+            android:padding="14dp"
+            android:src="@drawable/ic_mic"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/sendButton"
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="@color/on_brand_secondary" />
+
+        <!-- Blue send button (visible when input has text; sits next to mic; dimmed during recording) -->
+        <ImageButton
+            android:id="@+id/sendButton"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:layout_marginStart="6dp"
+            android:background="@drawable/bg_send_button"
+            android:contentDescription="@string/cd_send"
+            android:elevation="3dp"
+            android:padding="14dp"
+            android:src="@drawable/ic_send"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="@color/on_brand_primary" />
+
+        <!-- Record button (hidden, kept for existing logic compatibility) -->
         <Button
             android:id="@+id/recordButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/hold_to_speak" />
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:visibility="gone"
+            android:enabled="true"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
+        <!-- Slow replay button (hidden, kept for existing logic compatibility) -->
         <Button
-            android:id="@+id/sendButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="6dp"
-            android:text="@string/send_text" />
-    </LinearLayout>
+            android:id="@+id/slowReplayButton"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <!-- ===== SCRIM (tappable to close menu) ===== -->
+    <!-- =============== SCRIM (for slide menu) =============== -->
     <View
         android:id="@+id/menuScrim"
         android:layout_width="0dp"
@@ -126,16 +368,17 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- ===== SLIDE MENU CONTAINER (½ screen width, full height) ===== -->
+    <!-- =============== SLIDE MENU (left, ~75% width) =============== -->
     <FrameLayout
         android:id="@+id/slideMenuContainer"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:elevation="12dp"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintWidth_percent="0.5"
-        tools:visibility="visible" />
+        app:layout_constraintWidth_percent="0.78"
+        tools:visibility="gone" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

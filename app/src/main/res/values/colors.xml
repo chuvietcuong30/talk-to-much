@@ -1,8 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- ===== TalkToMuch Material 3 color tokens ===== -->
+
+    <!-- Brand: deep blue -->
+    <color name="brand_primary">#0B57D0</color>
+    <color name="brand_primary_pressed">#0842A0</color>
+    <color name="brand_primary_container">#E8F0FE</color>
+    <color name="on_brand_primary">#FFFFFF</color>
+
+    <!-- Brand: green (for mic / success accents) -->
+    <color name="brand_secondary">#0F9D58</color>
+    <color name="brand_secondary_pressed">#0B7A45</color>
+    <color name="brand_secondary_container">#E6F4EA</color>
+    <color name="on_brand_secondary">#FFFFFF</color>
+
+    <!-- Surfaces -->
+    <color name="surface">#FFFFFF</color>
+    <color name="surface_dim">#F4F7FB</color>
+    <color name="surface_container">#F8FAFD</color>
+    <color name="surface_outline">#DDE3EC</color>
+    <color name="surface_outline_variant">#EAEFF5</color>
+
+    <!-- Text -->
+    <color name="text_primary">#0E1A2B</color>
+    <color name="text_secondary">#5F6B7A</color>
+    <color name="text_tertiary">#8A95A4</color>
+    <color name="text_on_primary">#FFFFFF</color>
+
+    <!-- Accents -->
+    <color name="accent_success">#1E8E3E</color>
+    <color name="accent_warning">#E37400</color>
+    <color name="accent_error">#D93025</color>
+
+    <!-- Shadows -->
+    <color name="shadow_soft">#1A0E1A2B</color>
+
+    <!-- Legacy aliases (kept to avoid breaking existing adapters/themes) -->
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="menu_inactive_tint">#F8F9FA</color>
-    <color name="menu_active_tint">#4FC3F7</color>
-    <color name="menu_chevron_tint">#5A6772</color>
+    <color name="menu_inactive_tint">#5F6B7A</color>
+    <color name="menu_active_tint">#0B57D0</color>
+    <color name="menu_chevron_tint">#8A95A4</color>
 </resources>

@@ -1,13 +1,57 @@
 <resources>
-    <string name="app_name">talktoomuch</string>
+    <string name="app_name">TalkToMuch</string>
+
+    <!-- Header -->
+    <string name="header_online">Đang hoạt động</string>
+    <string name="header_status_online">Trực tuyến</string>
+    <string name="header_ai_subtitle">AI luyện nói tiếng Anh</string>
+    <string name="cd_settings">Mở cài đặt</string>
+    <string name="cd_menu">Mở menu</string>
+
+    <!-- Date label -->
+    <string name="date_today">Hôm nay</string>
+
+    <!-- AI messages -->
+    <string name="ai_meta_label">AI · TalkToMuch</string>
+    <string name="ai_greeting">Xin chào! Mình là TalkToMuch, trợ lý AI giúp bạn luyện nói tiếng Anh mỗi ngày.\n\nHãy bấm micro và nói bằng tiếng Anh, mình sẽ sửa ngữ pháp và gợi ý câu hỏi tiếp theo cho bạn nhé!</string>
+
+    <string name="ai_status_correct">Câu này đúng ngữ pháp</string>
+    <string name="ai_status_incorrect">Câu này cần chỉnh sửa</string>
+    <string name="ai_corrected_title">Câu sửa</string>
+    <string name="ai_corrected_label">Câu sửa: %1$s</string>
+    <string name="ai_explanation_title">Giải thích</string>
+    <string name="ai_explanation_label">Giải thích: %1$s</string>
+    <string name="ai_question_title">Câu hỏi tiếp theo</string>
+    <string name="ai_question_label">Câu hỏi của AI: %1$s</string>
+    <string name="ai_suggestion_pill">Gợi ý câu trả lời</string>
+    <string name="ai_play">Đọc chậm</string>
+
+    <!-- Suggestions / quick prompts -->
+    <string name="suggestion_intro">Hãy thử bắt đầu bằng một trong các chủ đề sau:</string>
+    <string name="suggestion_topic_travel">🧳  Travel</string>
+    <string name="suggestion_topic_work">💼  Work</string>
+    <string name="suggestion_topic_food">🍜  Food</string>
+    <string name="suggestion_topic_hobby">🎨  Hobby</string>
+
+    <!-- Input bar -->
+    <string name="input_hint">Nhập câu tiếng Anh…</string>
+    <string name="input_hint_hint">Nhập hoặc bấm micro để nói…</string>
+    <string name="cd_send">Gửi</string>
+    <string name="cd_mic">Bắt đầu ghi âm</string>
+    <string name="cd_stop_mic">Dừng ghi âm</string>
+    <string name="cd_attach">Đính kèm</string>
+
+    <!-- Recording / states -->
     <string name="hold_to_speak">Bắt đầu ghi âm</string>
-    <string name="press_and_hold_hint">Nhấn nút để bắt đầu ghi âm</string>
+    <string name="press_and_hold_hint">Nhấn nút micro để bắt đầu ghi âm</string>
     <string name="listening">Đang nghe…</string>
     <string name="stop_recording">Dừng ghi âm</string>
+    <string name="recording_label">Đang nghe bạn nói…</string>
     <string name="permission_denied">Bạn cần cấp quyền micro để dùng tính năng này.</string>
     <string name="speech_not_supported">Thiết bị không hỗ trợ Speech Recognition.</string>
     <string name="grammar_result_placeholder">Kết quả kiểm tra ngữ pháp sẽ hiển thị ở đây.</string>
     <string name="ai_thinking">AI đang phân tích ngữ pháp…</string>
+    <string name="ai_thinking_short">AI đang phân tích…</string>
     <string name="ai_no_transcript">Chưa có câu nào để phân tích.</string>
     <string name="ai_missing_key">Thiếu API key. Thêm GEMINI_API_KEY vào local.properties.</string>
     <string name="ai_error_prefix">Lỗi phân tích:</string>
@@ -20,15 +64,19 @@
     <string name="grammar_explanation">Giải thích: %1$s</string>
     <string name="grammar_question">Câu hỏi của AI: %1$s</string>
     <string name="slow_replay">Đọc chậm</string>
-    <string name="chat_title">Chatbot AI</string>
+
+    <!-- Chat title -->
+    <string name="chat_title">TalkToMuch</string>
     <string name="message_input_hint">Nhập câu nói hoặc bấm ghi âm...</string>
     <string name="send_text">Gửi</string>
+
+    <!-- Slide menu -->
     <string name="nav_open_menu">Mở menu</string>
     <string name="menu_close">Đóng</string>
     <string name="menu_history">History</string>
     <string name="menu_profile">Profile</string>
     <string name="menu_home">Home</string>
     <string name="menu_more">More</string>
-    <string name="menu_footer">talktoomuch · v1.0</string>
+    <string name="menu_footer">TalkToMuch · v1.0</string>
     <string name="menu_coming_soon">Mục này sẽ được cập nhật trong bản tiếp theo.</string>
 </resources>

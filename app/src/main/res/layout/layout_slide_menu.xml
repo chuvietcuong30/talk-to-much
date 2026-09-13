@@ -4,9 +4,10 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/bg_menu_panel"
+    android:elevation="12dp"
     android:orientation="vertical"
-    android:paddingTop="16dp"
-    android:paddingBottom="16dp">
+    android:paddingTop="20dp"
+    android:paddingBottom="20dp">
 
     <!-- ===== HEADER (Close row) ===== -->
     <LinearLayout
@@ -15,34 +16,82 @@
         android:layout_height="wrap_content"
         android:background="?attr/selectableItemBackground"
         android:gravity="center_vertical"
-        android:minHeight="56dp"
+        android:minHeight="48dp"
         android:orientation="horizontal"
         android:paddingStart="20dp"
         android:paddingEnd="20dp">
 
         <ImageView
-            android:layout_width="24dp"
-            android:layout_height="24dp"
+            android:layout_width="22dp"
+            android:layout_height="22dp"
             android:contentDescription="@string/menu_close"
-            android:src="@drawable/ic_arrow_back"
-            app:tint="#F8F9FA" />
+            android:src="@drawable/ic_back"
+            app:tint="@color/text_primary" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="20dp"
+            android:layout_marginStart="16dp"
+            android:fontFamily="sans-serif-medium"
             android:text="@string/menu_close"
-            android:textColor="#F8F9FA"
-            android:textSize="16sp"
-            android:textStyle="bold" />
+            android:textColor="@color/text_primary"
+            android:textSize="16sp" />
+    </LinearLayout>
+
+    <!-- ===== Brand block ===== -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp">
+
+        <FrameLayout
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="@drawable/bg_avatar_ai">
+
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:layout_gravity="center"
+                android:contentDescription="@null"
+                android:src="@drawable/ic_ai_sparkle" />
+        </FrameLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-medium"
+                android:text="@string/app_name"
+                android:textColor="@color/text_primary"
+                android:textSize="17sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/header_ai_subtitle"
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp" />
+        </LinearLayout>
     </LinearLayout>
 
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="20dp"
         android:layout_marginBottom="8dp"
-        android:background="#283742" />
+        android:background="@color/surface_outline_variant" />
 
     <!-- ===== MENU ITEMS LIST ===== -->
     <androidx.recyclerview.widget.RecyclerView
@@ -52,6 +101,7 @@
         android:layout_weight="1"
         android:clipToPadding="false"
         android:paddingStart="12dp"
+        android:paddingTop="4dp"
         android:paddingEnd="12dp" />
 
     <!-- ===== FOOTER ===== -->
@@ -61,7 +111,7 @@
         android:layout_marginTop="16dp"
         android:gravity="center"
         android:text="@string/menu_footer"
-        android:textColor="#5A6772"
+        android:textColor="@color/text_tertiary"
         android:textSize="12sp" />
 
 </LinearLayout>

@@ -17,7 +17,9 @@ import java.io.InputStreamReader
 import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
 import java.net.URL
-import kotlin.collections.plus
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class MainViewModel : ViewModel() {
     private val _chatMessages = MutableLiveData<List<ChatMessage>>(emptyList())
@@ -37,20 +39,53 @@ class MainViewModel : ViewModel() {
     private var sessionTranscript = ""
     private var currentPartial = ""
     private var nextMessageId = 0L
+    private var greetingShown = false
+
+    /** Cached "Today" label so the date pill can be reused across messages. */
+    private var todayLabel: String = "Today"
 
     fun initialize(
         speechAvailable: Boolean,
         speechNotSupportedText: String,
+        todayLabel: String = "Today",
+        greetingText: String = "",
     ) {
         this.speechAvailable = speechAvailable
+        this.todayLabel = todayLabel
         isListening = false
         _draftInputText.value = ""
-        if (speechAvailable) {
-            _isRecordButtonEnabled.value = true
-        } else {
+
+        // Build initial conversation
+        val initial = mutableListOf<ChatMessage>()
+        initial += ChatMessage(
+            id = nextMessageId++,
+            text = todayLabel,
+            fromUser = false,
+            isDateLabel = true,
+        )
+
+        if (!speechAvailable) {
             _isRecordButtonEnabled.value = false
-            appendMessage(speechNotSupportedText, fromUser = false)
+            initial += ChatMessage(
+                id = nextMessageId++,
+                text = speechNotSupportedText,
+                fromUser = false,
+                timeLabel = currentTimeLabel(),
+            )
+        } else {
+            _isRecordButtonEnabled.value = true
+            if (greetingText.isNotBlank() && !greetingShown) {
+                greetingShown = true
+                initial += ChatMessage(
+                    id = nextMessageId++,
+                    text = greetingText,
+                    fromUser = false,
+                    timeLabel = currentTimeLabel(),
+                )
+            }
         }
+
+        setOrPostChatMessages(initial)
     }
 
     fun canStartRecording(): Boolean = speechAvailable
@@ -70,7 +105,7 @@ class MainViewModel : ViewModel() {
 
     fun onPermissionDenied(permissionDeniedText: String) {
         isListening = false
-        appendMessage(permissionDeniedText, fromUser = false)
+        appendMessage(permissionDeniedText, fromUser = false, explanation = permissionDeniedText)
     }
 
     fun sendTypedPrompt(
@@ -153,7 +188,11 @@ class MainViewModel : ViewModel() {
         questionLabel: String,
     ) {
         if (prompt.isBlank()) {
-            appendMessage(noTranscriptText, fromUser = false)
+            appendMessage(
+                text = noTranscriptText,
+                fromUser = false,
+                explanation = noTranscriptText,
+            )
             _grammarResult.value =
                 GrammarResult(
                     isCorrect = false,
@@ -164,10 +203,14 @@ class MainViewModel : ViewModel() {
             return
         }
 
-        appendMessage(prompt, fromUser = true)
+        appendMessage(text = prompt, fromUser = true)
 
         if (apiKey.isBlank()) {
-            appendMessage(missingKeyText, fromUser = false)
+            appendMessage(
+                text = missingKeyText,
+                fromUser = false,
+                explanation = missingKeyText,
+            )
             _grammarResult.value =
                 GrammarResult(
                     isCorrect = false,
@@ -178,7 +221,11 @@ class MainViewModel : ViewModel() {
             return
         }
 
-        val thinkingMessageId = appendMessage(thinkingText, fromUser = false)
+        val thinkingMessageId = appendMessage(
+            text = thinkingText,
+            fromUser = false,
+            explanation = thinkingText,
+        )
         _grammarResult.value =
             GrammarResult(
                 isCorrect = false,
@@ -197,21 +244,27 @@ class MainViewModel : ViewModel() {
                 }
             result
                 .onSuccess { answer ->
-                    val aiText =
-                        formatGrammarResultForChat(
-                            result = answer,
-                            statusCorrectText = statusCorrectText,
-                            statusIncorrectText = statusIncorrectText,
-                            correctedLabel = correctedLabel,
-                            explanationLabel = explanationLabel,
-                            questionLabel = questionLabel,
-                        )
-                    updateMessage(thinkingMessageId, aiText)
+                    // Use the actual AI explanation as the message text and
+                    // explanation field. Previously this used the bare
+                    // `explanationLabel` ("Giải thích"), which caused the
+                    // bubble to render only an empty title and hide the real
+                    // explanation that the AI returned.
+                    val explanationText = answer.explanation.ifBlank { explanationLabel }
+                    updateMessage(
+                        messageId = thinkingMessageId,
+                        newText = explanationText,
+                        explanation = explanationText,
+                        statusCorrect = answer.isCorrect,
+                        correctedSentence = answer.correctedSentence,
+                        questionOfAI = answer.questionOfAI,
+                        showMetaReplay = true,
+                    )
                     _grammarResult.postValue(answer)
                 }.onFailure { error ->
                     updateMessage(
-                        thinkingMessageId,
-                        "$errorPrefixText ${error.message ?: "unknown"}",
+                        messageId = thinkingMessageId,
+                        newText = "$errorPrefixText ${error.message ?: "unknown"}",
+                        explanation = "$errorPrefixText ${error.message ?: "unknown"}",
                     )
                     _grammarResult.postValue(
                         GrammarResult(
@@ -269,6 +322,11 @@ class MainViewModel : ViewModel() {
     private fun appendMessage(
         text: String,
         fromUser: Boolean,
+        explanation: String? = null,
+        statusCorrect: Boolean? = null,
+        correctedSentence: String? = null,
+        questionOfAI: String? = null,
+        showMetaReplay: Boolean = false,
     ): Long {
         val messageId = nextMessageId++
         val currentMessages = _chatMessages.value.orEmpty()
@@ -278,6 +336,12 @@ class MainViewModel : ViewModel() {
                     id = messageId,
                     text = text,
                     fromUser = fromUser,
+                    timeLabel = currentTimeLabel(),
+                    explanation = explanation,
+                    statusCorrect = statusCorrect,
+                    correctedSentence = correctedSentence,
+                    questionOfAI = questionOfAI,
+                    showMetaReplay = showMetaReplay,
                 )
         setOrPostChatMessages(updatedMessages)
         return messageId
@@ -286,13 +350,25 @@ class MainViewModel : ViewModel() {
     private fun updateMessage(
         messageId: Long,
         newText: String,
+        explanation: String? = null,
+        statusCorrect: Boolean? = null,
+        correctedSentence: String? = null,
+        questionOfAI: String? = null,
+        showMetaReplay: Boolean = false,
     ) {
         val updatedMessages =
             _chatMessages.value
                 .orEmpty()
                 .map { message ->
                     if (message.id == messageId) {
-                        message.copy(text = newText)
+                        message.copy(
+                            text = newText,
+                            explanation = explanation ?: message.explanation,
+                            statusCorrect = statusCorrect ?: message.statusCorrect,
+                            correctedSentence = correctedSentence ?: message.correctedSentence,
+                            questionOfAI = questionOfAI ?: message.questionOfAI,
+                            showMetaReplay = showMetaReplay || message.showMetaReplay,
+                        )
                     } else {
                         message
                     }
@@ -308,36 +384,10 @@ class MainViewModel : ViewModel() {
         }
     }
 
-    private fun formatGrammarResultForChat(
-        result: GrammarResult,
-        statusCorrectText: String,
-        statusIncorrectText: String,
-        correctedLabel: String,
-        explanationLabel: String,
-        questionLabel: String,
-    ): String {
-        if (result.correctedSentence.isBlank() && result.questionOfAI.isBlank()) {
-            return result.explanation
-        }
-        return buildString {
-            append(if (result.isCorrect) statusCorrectText else statusIncorrectText)
-            if (result.correctedSentence.isNotBlank()) {
-                append('\n')
-                append(correctedLabel)
-                append(": ")
-                append(result.correctedSentence)
-            }
-            append('\n')
-            append(explanationLabel)
-            append(": ")
-            append(result.explanation)
-            if (result.questionOfAI.isNotBlank()) {
-                append('\n')
-                append(questionLabel)
-                append(": ")
-                append(result.questionOfAI)
-            }
-        }
+    private fun currentTimeLabel(): String {
+        val now = Date()
+        val format = SimpleDateFormat("HH:mm", Locale.getDefault())
+        return format.format(now)
     }
 
     private fun callGeminiGenerateGrammarCheck(

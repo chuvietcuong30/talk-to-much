@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Big green mic button: solid green circle with soft shadow + ripple -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Soft shadow layer (slightly offset, lower opacity) -->
+    <item android:top="2dp" android:left="0dp" android:right="0dp" android:bottom="-2dp">
+        <shape android:shape="oval">
+            <solid android:color="#1A0F9D58" />
+        </shape>
+    </item>
+
+    <!-- Main green circle -->
+    <item android:top="0dp" android:bottom="2dp">
+        <ripple android:color="#33000000">
+            <item android:id="@android:id/mask">
+                <shape android:shape="oval">
+                    <solid android:color="#FFFFFFFF" />
+                </shape>
+            </item>
+            <item>
+                <shape android:shape="oval">
+                    <solid android:color="@color/brand_secondary" />
+                </shape>
+            </item>
+        </ripple>
+    </item>
+</layer-list>
